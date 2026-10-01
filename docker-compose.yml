@@ -1,19 +1,18 @@
 services:
-  solar2:
+  solar-monitor:
     image: bdiego81/solar-monitor:latest
-    container_name: solar2
+    container_name: solar-monitor
     restart: unless-stopped
     ports:
-      - "8001:8000"
+      - "8000:8000"
     environment:
-      - SHINEMONITOR_USERNAME=${SHINEMONITOR_USERNAME}
-      - SHINEMONITOR_PASSWORD=${SHINEMONITOR_PASSWORD}
+      - DEBUG=false
+      - TZ=America/Santiago
     volumes:
       - ./data:/home/appuser/app/data
-      - ./config:/home/appuser/app/config
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/')\" || exi>
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 15s
+      start_period: 10s
