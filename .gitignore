@@ -1,0 +1,78 @@
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ==========================================
+# Application Runtime Data & Local Storage
+# ==========================================
+# Inverter config with credentials & live data
+data/
+config/
+*.db
+*.sqlite
+*.sqlite3
+
+# ==========================================
+# Docker & Local Testing
+# ==========================================
+docker-compose.override.yml
+solartest/
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# IDEs & Operating System
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# Logs & Testing
+# ==========================================
+*.log
+logs/
+.pytest_cache/
+.coverage
+htmlcov/
