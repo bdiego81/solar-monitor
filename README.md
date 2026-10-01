@@ -1,58 +1,124 @@
-Markdown
-# Solar Monitor
+# Solar Monitor Pro
 
-Lightweight telemetry service written in Python/FastAPI to monitor Voltronic / Axpert solar inverters via RS232/USB. Extracted metrics are parsed and published over MQTT to InfluxDB and Grafana, with integrated alert notifications sent via Telegram.
+Real-time solar inverter monitoring dashboard with Telegram alerts — designed for ShineMonitor-compatible inverters.
 
 ## Features
 
-- **Inverter Telemetry**: Polls operational data (PV input, battery status, grid voltage, load output) using `mpp-solar` / serial connection.
-- **Metrics Pipeline**: Publishes JSON payloads over MQTT for continuous ingestion into InfluxDB and visualization in Grafana.
-- **Telegram Alerts**: Configurable trigger thresholds for voltage drops, fault states, and grid failover notifications.
-- **Docker Ready**: Multi-architecture Docker builds (`amd64`, `arm64`) for deployment on Raspberry Pi or Linux servers.
+- ⚡ **Live Telemetry Dashboard** — PV power, battery level, grid status, load, and temperature updated in real time
+- 📊 **Historical Charts** — Browse daily energy production and consumption trends
+- 🔔 **Telegram Alerts** — Instant notifications for grid loss, overload, low battery, high temperature, and telemetry watchdog
+- 📋 **Automated Daily Reports** — End-of-day summary sent to your Telegram at a configurable time
+- ⚙️ **Web-Based Configuration** — Set credentials, alert thresholds, and Telegram integration entirely from the browser — no `.env` files needed
+- 🔒 **Secure by Default** — API documentation (`/docs`) is disabled in production; sensitive endpoints are hidden from the OpenAPI schema
 
-## Quickstart
+## Quick Start
 
-### 1. Configuration
+### Using Docker Compose (Recommended)
 
-Copy the example environment file and update it with your settings:
+Create a `docker-compose.yml` file:
+
+```yaml
+services:
+  solar-monitor:
+    image: bdiego81/solar-monitor:latest
+    container_name: solar-monitor
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/home/appuser/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/')\" || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+```
+
+Then run:
 
 ```bash
-cp .env.example .env
-Set your configuration parameters:
-
-Code snippet
-SERIAL_PORT=/dev/ttyUSB0
-INVERTER_MODEL=Axpert_MAX_7200
-MQTT_BROKER=192.168.1.100
-MQTT_PORT=1883
-MQTT_TOPIC=solar/telemetry
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_CHAT_ID=your_chat_id
-POLL_INTERVAL=5
-2. Docker Compose Deployment
-Run the container stack using Docker Compose:
-
-Bash
 docker compose up -d
-3. Local Development
-Install dependencies and run the service locally:
+```
 
-Bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python main.py
-Telemetry Payload
-Sample MQTT JSON payload emitted by the daemon:
+### Using Docker Run
 
-JSON
-{
-  "pv_input_watts": 3450,
-  "battery_voltage": 52.4,
-  "battery_capacity_pct": 88,
-  "ac_output_watts": 1200,
-  "inverter_mode": "Line",
-  "temperature_c": 38.5
-}
-License
+```bash
+docker run -d \
+  --name solar-monitor \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  -v $(pwd)/data:/home/appuser/app/data \
+  bdiego81/solar-monitor:latest
+```
+
+## Initial Setup
+
+1. Open your browser and navigate to `http://<your-host-ip>:8000`
+2. Go to the **Settings** tab (⚙️)
+3. Enter your **ShineMonitor** username and password
+4. *(Optional)* Enter your **Telegram Bot Token** and **Chat ID** to enable alerts
+5. Click **Save** — all settings are persisted to `data/config.json` and survive container restarts and image updates
+
+> **No `.env` file is required.** All configuration is managed through the web interface.
+
+## Supported Architectures
+
+| Architecture | Tag |
+|---|---|
+| `linux/amd64` | `latest` |
+| `linux/arm64` | `latest` |
+
+Tested on: Raspberry Pi 3/4/5 (64-bit OS), x86_64 servers, and NAS devices.
+
+## Data Persistence
+
+All configuration and runtime data is stored in a single volume:
+
+| Container Path | Purpose |
+|---|---|
+| `/home/appuser/app/data` | Configuration (`config.json`) and runtime data |
+
+Mount `./data` to this path to persist your settings across container updates.
+
+## Environment Variables (Optional)
+
+All settings can be configured from the web UI. Environment variables are only needed for advanced use cases:
+
+| Variable | Default | Description |
+|---|---|---|
+| `DEBUG` | `false` | Set to `true` to enable Swagger UI at `/docs` and ReDoc at `/redoc` |
+| `PORT` | `8000` | Internal application port |
+
+## Enabling Debug Mode
+
+To temporarily enable the API documentation for development or troubleshooting:
+
+```yaml
+services:
+  solar-monitor:
+    image: bdiego81/solar-monitor:latest
+    environment:
+      - DEBUG=true
+    # ...
+```
+
+Then access `http://<your-host-ip>:8000/docs` for the interactive API explorer.
+
+## Ports
+
+| Port | Protocol | Description |
+|---|---|---|
+| `8000` | TCP | Web dashboard and REST API |
+
+## Health Check
+
+The container includes a built-in health check at `GET /health` that returns `{"status": "healthy"}`.
+
+## Source Code
+
+[GitHub Repository](https://github.com/bdiego81/solar-monitor)
+
+## License
+
 MIT
