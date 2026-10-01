@@ -25,14 +25,11 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    environment:
+      - DEBUG=false
+      - TZ=America/Santiago
     volumes:
       - ./data:/home/appuser/app/data
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/')\" || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 ```
 
 Then run:
@@ -44,12 +41,7 @@ docker compose up -d
 ### Using Docker Run
 
 ```bash
-docker run -d \
-  --name solar-monitor \
-  --restart unless-stopped \
-  -p 8000:8000 \
-  -v $(pwd)/data:/home/appuser/app/data \
-  bdiego81/solar-monitor:latest
+docker run -d --name solar-monitor --restart unless-stopped -p 8000:8000 -e DEBUG=false -e TZ=America/Santiago -v ./data:/home/appuser/app/data bdiego81/solar-monitor:latest
 ```
 
 ## Initial Setup
